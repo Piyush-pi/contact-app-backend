@@ -1,10 +1,13 @@
 """View File"""
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from apps.contacts.serializers import ContactSerializer
 from apps.contacts.models import Contact
 from apps.contacts.constants import ApplicationMessages
+from apps.contacts.forms import ContactForm
 
 
 class ContactViewSet(viewsets.ModelViewSet):
@@ -14,9 +17,6 @@ class ContactViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Get queryset"""
         queryset = Contact.objects.filter(is_deleted=False)
-        title = self.request.query_params.get('title', None)
-        if title is not None:
-            queryset = queryset.filter(title=title)
         return queryset
 
     def create(self, request):
@@ -47,7 +47,7 @@ class ContactViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Contact.DoesNotExist:
-            error = {"error": ApplicationMessages.NOTE_NOT_FOUND}
+            error = {"error": ApplicationMessages.CONTACT_NOT_FOUND}
             return Response(error, status=status.HTTP_404_NOT_FOUND)
 
     def destroy(self, request, pk=None):
@@ -58,5 +58,34 @@ class ContactViewSet(viewsets.ModelViewSet):
             contact.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Contact.DoesNotExist:
-            error = {"error": ApplicationMessages.NOTE_NOT_FOUND}
+            error = {"error": ApplicationMessages.CONTACT_NOT_FOUND}
             return Response(error, status=status.HTTP_404_NOT_FOUND)
+
+
+class ContactListView(ListView):
+    model = Contact
+    template_name = 'contacts/contact_list.html'
+    context_object_name = 'contacts'
+
+
+class ContactCreateView(CreateView):
+    """Contact Create View"""
+    model = Contact
+    form_class = ContactForm
+    template_name = 'contacts/contact_form.html'
+    success_url = reverse_lazy('contacts:contact_list')
+
+
+class ContactUpdateView(UpdateView):
+    """Contact Update View"""
+    model = Contact
+    form_class = ContactForm
+    template_name = 'contacts/contact_form.html'
+    success_url = reverse_lazy('contacts:contact_list')
+
+
+class ContactDeleteView(DeleteView):
+    """Contact Delete View"""
+    model = Contact
+    template_name = 'contacts/contact_confirm_delete.html'
+    success_url = reverse_lazy('contacts:contact_list')

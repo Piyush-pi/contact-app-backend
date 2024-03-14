@@ -43,6 +43,7 @@ router.register(r'contacts', ContactViewSet, basename='contact')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
+    path('contact', include("apps.contacts.urls")),
 ]
 
 urlpatterns += [
