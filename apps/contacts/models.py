@@ -24,11 +24,6 @@ class BaseModel(models.Model):
         """Object String Representation"""
         return f"{self.id}-{self.created_at}"
 
-    def delete(self):
-        """Temporary Delete Function"""
-        self.is_deleted = True
-        self.save()
-
 
 class Contact(BaseModel):
     """Contact Model"""
